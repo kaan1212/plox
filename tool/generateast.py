@@ -44,8 +44,8 @@ def definevisitor(f, basename, types):
     for type in types:
         typename = type.split(':')[0].strip()
         f.write('    @abstractmethod\n')
-        f.write(f'    def visit{typename}{
-                basename}(self, {basename.lower()}): pass\n')
+        f.write(f'    def visit{typename.lower()}{
+                basename.lower()}(self, {basename.lower()}): pass\n')
 
 
 def definetype(f, basename, classname, fieldlist):
@@ -65,7 +65,8 @@ def definetype(f, basename, classname, fieldlist):
     # Visitor pattern.
     f.write('\n')  # Added by me.
     f.write(f'    def accept(self, visitor):\n')
-    f.write(f'        return visitor.visit{classname}{basename}(self)\n')
+    f.write(f'        return visitor.visit{
+            classname.lower()}{basename.lower()}(self)\n')
 
 
 if __name__ == '__main__':
