@@ -1,5 +1,8 @@
 import sys
+from lox.astprinter import AstPrinter
+from lox.parser import Parser
 from lox.scanner import Scanner
+from lox.tokentype import TokenType
 
 
 haderror = False
@@ -40,10 +43,14 @@ def __runprompt():
 def __run(source):
     scanner = Scanner(source, error)
     tokens = scanner.scantokens()
+    parser = Parser(tokens, error2)
+    expression = parser.parse()
 
-    # For now, just print the tokens.
-    for token in tokens:
-        print(token)
+    # Stop if there was a syntax error.
+    if haderror:
+        return
+
+    print(AstPrinter().print(expression))
 
 
 def error(line, message):
@@ -54,6 +61,15 @@ def __report(line, where, message):
     print(f'[line {line}] Error{where}: {message}', file=sys.stderr)
     global haderror
     haderror = True
+
+# def error
+
+
+def error2(token, message):
+    if token.type == TokenType.EOF:
+        __report(token.line, ' at end', message)
+    else:
+        __report(token.line, ' at \'' + token.lexeme + '\'', message)
 
 
 if __name__ == '__main__':
