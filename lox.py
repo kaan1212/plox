@@ -1,11 +1,22 @@
 import sys
 from lox.astprinter import AstPrinter
+from lox.interpreter import Interpreter
 from lox.parser import Parser
 from lox.scanner import Scanner
 from lox.tokentype import TokenType
 
 
+def runtimeerror(error):
+    # todo: Refactor. See Chapter evaluating expressions.
+    print(error.args[1] + '\n[line ' +
+          str(error.args[0].line) + ']', file=sys.stderr)
+    global hadruntimeerror
+    hadruntimeerror = True
+
+
+interpreter = Interpreter(runtimeerror)
 haderror = False
+hadruntimeerror = False
 
 
 def main():
@@ -24,6 +35,8 @@ def __runfile(path):
 
         if haderror:
             sys.exit(65)
+        if hadruntimeerror:
+            sys.exit(70)
 
 
 def __runprompt():
@@ -50,11 +63,20 @@ def __run(source):
     if haderror:
         return
 
-    print(AstPrinter().print(expression))
+    interpreter.interpret(expression)
 
 
 def error(line, message):
     __report(line, '', message)
+
+
+# I had to move this function up.
+# def runtimeerror(error):
+#     # todo: Refactor.
+#     print(error.args[1] + '\n[line ' +
+#           error.args[0].line + ']', file=sys.stderr)
+#     global hadruntimeerror
+#     hadruntimeerror = True
 
 
 def __report(line, where, message):
@@ -62,9 +84,8 @@ def __report(line, where, message):
     global haderror
     haderror = True
 
+
 # def error
-
-
 def error2(token, message):
     if token.type == TokenType.EOF:
         __report(token.line, ' at end', message)
