@@ -1,17 +1,26 @@
+from lox.environment import Environment
 from lox.expr import Visitor
 from lox.tokentype import TokenType
 
 
 class Interpreter(Visitor):
-    def __init__(self, runtimerror):
-        self.runtimeerror = runtimerror
+    def __init__(self, runtimeerror):
+        self.runtimeerror = runtimeerror
+        self.environment = Environment()
 
-    def interpret(self, expression):
+    # def interpret(self, expression):
+    #     try:
+    #         value = self.evaluate(expression)
+    #         print(self.stringify(value))
+    #     except RuntimeError as error:
+    #         # todo: Create own exception class like in the book.
+    #         self.runtimeerror(error)
+
+    def interpret(self, statements):
         try:
-            value = self.evaluate(expression)
-            print(self.stringify(value))
+            for statement in statements:
+                self.execute(statement)
         except RuntimeError as error:
-            # todo: Create own exception class like in the book.
             self.runtimeerror(error)
 
     def visitliteralexpr(self, expr):
@@ -29,6 +38,9 @@ class Interpreter(Visitor):
 
         # Unreachable.
         return None
+
+    def visitvariableexpr(self, expr):
+        return self.environment.get(expr.name)
 
     def checknumberoperand(self, operator, operand):
         if isinstance(operand, float):
@@ -78,6 +90,26 @@ class Interpreter(Visitor):
 
     def evaluate(self, expr):
         return expr.accept(self)
+
+    def execute(self, stmt):
+        stmt.accept(self)
+
+    def visitexpressionstmt(self, stmt):
+        self.evaluate(stmt.expression)
+        return None
+
+    def visitprintstmt(self, stmt):
+        value = self.evaluate(stmt.expression)
+        print(self.stringify(value))
+        return None
+
+    def visitvarstmt(self, stmt):
+        value = None
+        if stmt.initializer != None:
+            value = self.evaluate(stmt.initializer)
+
+        self.environment.define(stmt.name.lexeme, value)
+        return None
 
     def visitbinaryexpr(self, expr):
         left = self.evaluate(expr.left)

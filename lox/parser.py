@@ -1,5 +1,6 @@
 from lox.tokentype import TokenType
 from lox.expr import *
+import lox.stmt as stmt
 
 
 class Parser:
@@ -10,13 +11,56 @@ class Parser:
         self.current = 0
 
     def parse(self):
-        try:
-            return self.expression()
-        except ParseError:
-            return None
+        # try:
+        #     return self.expression()
+        # except ParseError:
+        #     return None
+
+        statements = []
+        while not self.isatend():
+            statements.append(self.declaration())
+
+        return statements
 
     def expression(self):
         return self.equality()
+
+    def declaration(self):
+        try:
+            if self.match(TokenType.VAR):
+                return self.vardeclaration()
+
+            return self.statement()
+        except ParseError as error:
+            self.synchronize()
+            return None
+
+    def statement(self):
+        if self.match(TokenType.PRINT):
+            return self.printstatement()
+
+        return self.expressionstatement()
+
+    def printstatement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        return stmt.Print(value)
+
+    def vardeclaration(self):
+        name = self.consume(TokenType.IDENTIFIER, 'Expect variable name.')
+
+        initializer = None
+        if self.match(TokenType.EQUAL):
+            initializer = self.expression()
+
+        self.consume(TokenType.SEMICOLON,
+                     "Expect ';' after variable declaration.")
+        return stmt.Var(name, initializer)
+
+    def expressionstatement(self):
+        expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
+        return stmt.Expression(expr)
 
     def equality(self):
         expr = self.comparison()
@@ -76,6 +120,9 @@ class Parser:
 
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
+
+        if self.match(TokenType.IDENTIFIER):
+            return Variable(self.previous())
 
         if self.match(TokenType.LEFT_PAREN):
             expr = self.expression()

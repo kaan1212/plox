@@ -10,7 +10,14 @@ def main(args):
         'Binary   : left, operator, right',
         'Grouping : expression',
         'Literal  : value',
-        'Unary    : operator, right'
+        'Unary    : operator, right',
+        'Variable : name'
+    ])
+
+    defineast(outputdir, 'Stmt', [
+        'Expression : expression',
+        'Print      : expression',
+        'Var        : name, initializer'
     ])
 
 

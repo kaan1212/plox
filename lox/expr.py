@@ -15,6 +15,8 @@ class Visitor(ABC):
     def visitliteralexpr(self, expr): pass
     @abstractmethod
     def visitunaryexpr(self, expr): pass
+    @abstractmethod
+    def visitvariableexpr(self, expr): pass
 
 
 class Binary(Expr):
@@ -50,3 +52,11 @@ class Unary(Expr):
 
     def accept(self, visitor):
         return visitor.visitunaryexpr(self)
+
+
+class Variable(Expr):
+    def __init__(self, name):
+        self.name = name
+
+    def accept(self, visitor):
+        return visitor.visitvariableexpr(self)

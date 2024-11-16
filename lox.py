@@ -57,13 +57,13 @@ def __run(source):
     scanner = Scanner(source, error)
     tokens = scanner.scantokens()
     parser = Parser(tokens, error2)
-    expression = parser.parse()
+    statements = parser.parse()
 
     # Stop if there was a syntax error.
     if haderror:
         return
 
-    interpreter.interpret(expression)
+    interpreter.interpret(statements)
 
 
 def error(line, message):
